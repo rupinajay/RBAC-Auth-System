@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .login-btn:hover {
+            background-color: #5a67d8;
+        }
+        #loginResult {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    required 
+                    placeholder="Enter your username"
+                >
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    placeholder="Enter your password"
+                >
+            </div>
+            <button type="submit" class="login-btn" id="loginBtn">Login</button>
+        </form>
+        <div id="loginResult"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginResult = document.getElementById('loginResult');
+
+            // Disable button and reset result
+            loginBtn.disabled = true;
+            loginResult.innerHTML = '';
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                console.log("Response status:", response.status); // Log the response status
+
+                if (response.ok) {
+                    const token = await response.text(); // Assuming the token is returned as plain text
+                    const userInfo = parseJwt(token); // Decode the JWT to get user info
+
+                    // Display success message
+                    loginResult.innerHTML = `
+                        <p class="success">Login Successful!</p>
+                        <p>Welcome, ${userInfo.username}</p>
+                        <p>Roles: ${userInfo.roles.length > 0 ? userInfo.roles.join(', ') : 'No roles assigned'}</p>
+                    `;
+                    loginResult.classList.add('success');
+                } else {
+                    // Handle non-200 responses
+                    const errorText = await response.text(); // Get the error message from the response
+                    console.error("Error response:", errorText); // Log the error response
+                    loginResult.innerHTML = '<p class="error">Invalid username or password</p>';
+                    loginResult.classList.add('error');
+                }
+            } catch (error) {
+                // Handle network errors
+                console.error("Network error:", error); // Log the error for debugging
+                loginResult.innerHTML = '<p class="error">Network error. Please try again.</p>';
+                loginResult.classList.add('error');
+            } finally {
+                loginBtn.disabled = false; // Re-enable the button
+            }
+        });
+
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            const userInfo = JSON.parse(jsonPayload);
+            console.log("Decoded JWT:", userInfo); // Log the entire userInfo object
+
+            // Ensure roles is an array, default to an empty array if undefined
+            userInfo.roles = userInfo.roles || []; // Adjust based on your JWT structure
+
+            // Check if username is present and set a default if not
+            userInfo.username = userInfo.username || userInfo.sub || 'Unknown User'; // Adjust based on your JWT structure
+            return userInfo;
+        }
+    </script>
+</body>
+</html>
