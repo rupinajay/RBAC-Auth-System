@@ -63,6 +63,9 @@ To run the application, use the following command:
    ```
 The application will start on `http://localhost:8080`.
 
+Local host index.html file in 3000 port, and voila! The application ui is good to go.
+![Base UI](Snippets/Screenshot 2024-11-28 at 6.10.09 PM.png "Base UI" )
+
 ## Usage
 
 ### Basic Usage
@@ -79,7 +82,7 @@ Once the application is running, you can access the API endpoints. For example, 
 - **Role Management**: Admin users can manage roles through the `/api/roles` endpoint.
 
 ## API Documentation
-
+![API Documentation](Snippets/Screenshot 2024-11-28 at 12.16.26 AM.png "API Documentation" )
 ### Authentication
 - **POST** `/api/auth/login`
   - **Description**: Authenticates a user and returns a JWT token.
@@ -110,7 +113,7 @@ Once the application is running, you can access the API endpoints. For example, 
       }
     ]
     ```
-
+![User Management](Snippets/Screenshot 2024-11-28 at 12.42.39 AM.png "User Management" )
 ### Role Management
 - **POST** `/api/roles`
   - **Description**: Creates a new role.
@@ -127,7 +130,7 @@ Once the application is running, you can access the API endpoints. For example, 
       "name": "ROLE_ADMIN"
     }
     ```
-
+![Role Management](Snippets/Screenshot 2024-11-28 at 4.41.04 PM.png "Role Management" )
 ## Configuration
 
 ### Environment Variables
